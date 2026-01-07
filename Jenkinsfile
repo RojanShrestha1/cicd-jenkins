@@ -1,6 +1,10 @@
 pipeline {
     agent any
 
+    environment {
+        PATH = "/usr/local/bin:${env.PATH}"
+    }
+
     stages {
         stage('Verifying Tooling') {
             steps {
@@ -10,28 +14,21 @@ pipeline {
                     docker-compose version
                     curl --version
                     jq --version
-                
                 '''
-                
             }
         }
+
         stage("PRUNE DOCKER DATA"){
-
             steps {
-
-                sh '''
-                    docker system prune -a --volumes -f
-                '''
+                sh 'docker system prune -a --volumes -f'
             }
         }
 
         stage('Start Services') {
             steps {
-                sh '''docker-compose up -d --no-color --wait'''
-                sh '''docker-compose ps'''
+                sh 'docker-compose up -d --no-color --wait'
+                sh 'docker-compose ps'
             }
         }
-      
     }
-
 }
