@@ -1,10 +1,12 @@
+version: "3.9"
+
 services:
   web:
     build:
       context: .
       dockerfile: Dockerfile
     ports:
-      - "8081:80" 
+      - "8081:80"   # Host:Container, access app via http://localhost:8081
     environment:
       - FLASK_ENV=development
       - DATABASE_URL=postgresql://user:password@db:5432/app_db
@@ -12,10 +14,15 @@ services:
       db:
         condition: service_healthy
     volumes:
-      - ./app:/app
+      - ./app:/app   # Sync local app folder with container
     networks:
       - app-network
-
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
   db:
     image: postgres:13
@@ -32,11 +39,15 @@ services:
       retries: 5
     networks:
       - app-network
-
+    restart: unless-stopped
+    logging:
+      driver: "json-file"
+      options:
+        max-size: "10m"
+        max-file: "3"
 
 volumes:
   postgres_data:
-
 
 networks:
   app-network:
