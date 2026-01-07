@@ -1,0 +1,43 @@
+services:
+  web:
+    build:
+      context: .
+      dockerfile: Dockerfile
+    ports:
+      - "80:8000"
+    environment:
+      - FLASK_ENV=development
+      - DATABASE_URL=postgresql://user:password@db:5432/app_db
+    depends_on:
+      db:
+        condition: service_healthy
+    volumes:
+      - ./app:/app
+    networks:
+      - app-network
+
+
+  db:
+    image: postgres:13
+    environment:
+      - POSTGRES_USER=user
+      - POSTGRES_PASSWORD=password
+      - POSTGRES_DB=app_db
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+    healthcheck:
+      test: ["CMD-SHELL", "pg_isready -U user -d app_db"]
+      interval: 5s
+      timeout: 5s
+      retries: 5
+    networks:
+      - app-network
+
+
+volumes:
+  postgres_data:
+
+
+networks:
+  app-network:
+    driver: bridge
